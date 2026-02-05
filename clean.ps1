@@ -59,13 +59,37 @@ foreach ($dir in $targetDirs) {
 	$index++
 }
 
-# 削除対象を選択
+# リンクを作成する対象を選択させる
 $input = Read-Host "リンクを削除したいディレクトリ番号を入力(READMEを参照)"
-$start, $end = $input.split('-')
-if ($end) {
-	$selectedDirs = $targetDirs[($start - 1)..($end - 1)]
+
+# 入力された番号に基づき、対象ディレクトリを決定
+# 入力なし = 全選択
+# ハイフン区切り = 範囲選択
+# カンマ区切り = 個別選択
+
+# 入力なし = 全選択
+if ([string]::IsNullOrWhiteSpace($input)) {
+    $selectedDirs = $targetDirs
+    Write-Host "全てのディレクトリを選択しました。"
 } else {
-	$selectedDirs = @($targetDirs[$start - 1])
+    if ($input.Contains(',')) {
+        # カンマ区切り = 個別選択
+        $indices = $input.split(',')
+        $selectedDirs = @()
+        foreach ($index in $indices) {
+            $selectedDirs += $targetDirs[$index.Trim() - 1]
+        }
+        Write-Host "ディレクトリ $input を選択しました。"
+    } elseif ($input.Contains('-')) {
+        # ハイフン区切り = 範囲選択
+        $start, $end = $input.split('-')
+        if ($end) {
+            $selectedDirs = $targetDirs[($start - 1)..($end - 1)]
+        } else {
+            $selectedDirs = @($targetDirs[$start - 1])
+        }
+        Write-Host "ディレクトリ $start ~ $end を選択しました。"
+    }
 }
 
 # common系ディレクトリ名一覧
